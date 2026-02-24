@@ -10,10 +10,14 @@ export default function PerformanceMonitor() {
   const lastTime = useRef(performance.now());
 
   useEffect(() => {
-    // Only show in development or if query param ?debug=true is present
+    // Only show if query param ?debug=true is present
     const urlParams = new URLSearchParams(window.location.search);
-    if (process.env.NODE_ENV === "development" || urlParams.get("debug") === "true") {
+    const isDebug = urlParams.get("debug") === "true";
+    
+    if (isDebug) {
       setIsVisible(true);
+    } else {
+      return; // Don't start loop if not visible
     }
 
     const loop = (time: number) => {
