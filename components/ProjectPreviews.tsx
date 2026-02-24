@@ -147,13 +147,8 @@ export function OrionPreview() {
                     <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-white/50"></div>
                     <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-white/50"></div>
                     
-                    {/* Central Data */}
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-                        <div className="text-[10px] font-mono text-cyan-400 mb-2 tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-500">GENERATING TERRAIN...</div>
-                        <div className="w-48 h-[1px] bg-white/20 relative overflow-hidden">
-                            <div className="absolute top-0 left-0 h-full w-1/2 bg-cyan-500 animate-[loading_2s_ease-in-out_infinite]"></div>
-                        </div>
-                    </div>
+                
+                    
                 </div>
             </div>
 
@@ -186,10 +181,7 @@ export function AetherPreview() {
                 </p>
              </div>
 
-             <div className="absolute bottom-8 left-8 z-10 flex gap-4 text-[10px] text-white/50 font-mono">
-                <span>SCROLL</span>
-                <div className="w-12 h-[1px] bg-white/20 my-auto"></div>
-             </div>
+             
         </div>
     );
 }
