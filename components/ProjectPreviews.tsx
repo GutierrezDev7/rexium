@@ -3,136 +3,163 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import * as THREE from "three";
 import gsap from "gsap";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float, MeshDistortMaterial, Sphere, Environment, Stage } from "@react-three/drei";
+import { Float, MeshTransmissionMaterial, Environment, PerspectiveCamera, Stars } from "@react-three/drei";
+import { usePerformance } from "@/context/PerformanceContext";
 
-// --- KRONOS (3D E-commerce) ---
-function ProductModel() {
+// --- KRONOS (E-commerce / Product Focus) ---
+function KronosScene() {
   const mesh = useRef<THREE.Mesh>(null);
+  const { tier } = usePerformance();
   
   useFrame((state) => {
     if (mesh.current) {
-        mesh.current.rotation.y = state.clock.getElapsedTime() * 0.5;
-        mesh.current.rotation.x = Math.sin(state.clock.getElapsedTime() * 0.5) * 0.2;
+        mesh.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.5) * 0.2;
+        mesh.current.rotation.y += 0.005;
     }
   });
 
   return (
-    <Float speed={2} rotationIntensity={1} floatIntensity={1}>
-        <Sphere ref={mesh} args={[1, 64, 64]} scale={1.6}>
-            <MeshDistortMaterial
-                color="#e0e0e0"
-                roughness={0.1}
-                metalness={0.9}
-                distort={0.3}
-                speed={2}
-            />
-        </Sphere>
-    </Float>
+    <group>
+      <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
+        <mesh ref={mesh}>
+          {/* Abstract Torus Knot representing complex geometry/product */}
+          <torusKnotGeometry args={[1, 0.3, 128, 32]} />
+          <MeshTransmissionMaterial 
+            backside
+            backsideThickness={5}
+            thickness={2}
+            roughness={0.2}
+            chromaticAberration={0.5}
+            anisotropy={0.5}
+            color="#ffffff"
+            resolution={tier === 'high' ? 512 : 256}
+            samples={tier === 'high' ? 10 : 6}
+          />
+        </mesh>
+      </Float>
+      
+      <Environment preset="city" />
+      
+      {/* Cinematic Lighting */}
+      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={2} color="#4a9eff" />
+      <pointLight position={[-10, -10, -10]} intensity={1} color="#ff4a4a" />
+    </group>
   );
 }
 
 export function KronosPreview() {
   return (
-    <div className="w-full h-full bg-[#0a0a0a] relative overflow-hidden group">
-      
-      
-      
+    <div className="w-full h-full bg-[#050505] relative overflow-hidden group flex items-center justify-center">
+      {/* Cinematic Background - Abstract Product Light */}
+      <div 
+        className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop')] bg-cover bg-center opacity-60 grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-[1.5s] ease-out"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-black/60" />
 
-      <Canvas camera={{ position: [0, 0, 5] }} dpr={[1, 2]}>
-         <Environment preset="studio" />
-         <ambientLight intensity={0.5} />
-         <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
-         <ProductModel />
-      </Canvas>
+      {/* Interactive Overlay UI */}
+      <div className="relative z-10 flex flex-col items-center justify-center space-y-6">
+          <div className="w-32 h-32 rounded-full border border-white/20 flex items-center justify-center backdrop-blur-sm group-hover:border-white/50 transition-colors duration-500">
+              <div className="w-24 h-24 rounded-full bg-white/5 animate-pulse-slow"></div>
+          </div>
+          <p className="text-xs font-mono tracking-[0.3em] text-white/70 uppercase">360° Product View</p>
+      </div>
+
+      
+      
     </div>
   );
 }
 
-// --- ORION (Procedural Architecture) ---
-function CityBlock({ position, scale, color }: any) {
-    const mesh = useRef<THREE.Mesh>(null);
-    const [hovered, setHover] = useState(false);
+// --- ORION (Data / Architecture Focus) ---
+function OrionScene() {
+    const pointsRef = useRef<THREE.Points>(null);
+    const { particleCountMultiplier } = usePerformance();
     
+    // Create a topographic data grid
+    const particles = useMemo(() => {
+        const count = Math.floor(2000 * particleCountMultiplier); // Efficient count
+        const positions = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
+        
+        for(let i = 0; i < count; i++) {
+            const x = (Math.random() - 0.5) * 10;
+            const z = (Math.random() - 0.5) * 10;
+            const y = Math.sin(x * 0.5) * Math.cos(z * 0.5) * 1.5; // Wave terrain
+            
+            positions[i*3] = x;
+            positions[i*3+1] = y;
+            positions[i*3+2] = z;
+            
+            // Cyberpunk colors
+            colors[i*3] = 0; // R
+            colors[i*3+1] = 0.5 + Math.random() * 0.5; // G (Green/Cyan)
+            colors[i*3+2] = 1; // B (Blue)
+        }
+        
+        return { positions, colors };
+    }, [particleCountMultiplier]);
+
     useFrame((state) => {
-        if(mesh.current && hovered) {
-             mesh.current.rotation.y += 0.02;
+        if (pointsRef.current) {
+            pointsRef.current.rotation.y += 0.002;
         }
     });
 
     return (
-        <mesh 
-            ref={mesh}
-            position={position} 
-            onPointerOver={() => setHover(true)}
-            onPointerOut={() => setHover(false)}
-        >
-            <boxGeometry args={scale} />
-            <meshStandardMaterial 
-                color={hovered ? "#00ffff" : color} 
-                roughness={0.2}
-                metalness={0.8}
-                emissive={hovered ? "#00ffff" : "#000000"}
-                emissiveIntensity={hovered ? 0.5 : 0}
+        <points ref={pointsRef}>
+            <bufferGeometry>
+                <bufferAttribute
+                    attach="attributes-position"
+                    args={[particles.positions, 3]}
+                />
+                <bufferAttribute
+                    attach="attributes-color"
+                    args={[particles.colors, 3]}
+                />
+            </bufferGeometry>
+            <pointsMaterial
+                size={0.05}
+                vertexColors
+                transparent
+                opacity={0.8}
+                sizeAttenuation
+                depthWrite={false}
             />
-            <lineSegments>
-                <edgesGeometry args={[new THREE.BoxGeometry(scale[0], scale[1], scale[2])]} />
-                <lineBasicMaterial color={hovered ? "#ffffff" : "#333333"} transparent opacity={0.2} />
-            </lineSegments>
-        </mesh>
+        </points>
     );
 }
 
 export function OrionPreview() {
-    // Generate a denser grid of blocks
-    const blocks = useMemo(() => {
-        const items = [];
-        for (let x = -2; x <= 2; x++) {
-            for (let z = -2; z <= 2; z++) {
-                // Skip center for visual interest
-                if (x === 0 && z === 0) continue;
-                
-                const height = Math.random() * 3 + 0.5;
-                items.push({
-                    position: [x * 1.2, height / 2, z * 1.2],
-                    scale: [1, height, 1],
-                    color: Math.random() > 0.8 ? "#333" : "#111",
-                });
-            }
-        }
-        // Center tower
-        items.push({
-            position: [0, 2.5, 0],
-            scale: [1.5, 5, 1.5],
-            color: "#0a0a0a"
-        });
-        return items;
-    }, []);
-
     return (
-        <div className="w-full h-full bg-[#080808] relative overflow-hidden group">
+        <div className="w-full h-full bg-[#050505] relative overflow-hidden group flex items-center justify-center">
+            {/* Cinematic Background - Wireframe City/Grid */}
+            <div 
+                className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?q=80&w=2670&auto=format&fit=crop')] bg-cover bg-center opacity-50 grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-[1.5s] ease-out mix-blend-screen"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
             
-
-            <div className="absolute bottom-6 right-6 z-10 font-mono text-xs text-right">
-                <div className="text-white mb-1">SEED: 8492X</div>
-                
+            {/* HUD / Data Overlay */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="w-[80%] h-[60%] border border-white/10 relative group-hover:border-cyan-500/30 transition-colors duration-700">
+                    {/* Corners */}
+                    <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-white/50"></div>
+                    <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-white/50"></div>
+                    <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-white/50"></div>
+                    <div className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-white/50"></div>
+                    
+                    {/* Central Data */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+                        <div className="text-[10px] font-mono text-cyan-400 mb-2 tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-500">GENERATING TERRAIN...</div>
+                        <div className="w-48 h-[1px] bg-white/20 relative overflow-hidden">
+                            <div className="absolute top-0 left-0 h-full w-1/2 bg-cyan-500 animate-[loading_2s_ease-in-out_infinite]"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <Canvas camera={{ position: [8, 8, 8], fov: 35 }} dpr={[1, 2]}>
-                <color attach="background" args={['#050505']} />
-                <fog attach="fog" args={['#050505', 5, 20]} />
-                <ambientLight intensity={0.2} />
-                <directionalLight position={[10, 10, 5]} intensity={1} color="#00ffff" />
-                <pointLight position={[-5, 5, -5]} intensity={0.5} color="#ff00ff" />
-                
-                <group rotation={[0, Math.PI / 4, 0]}>
-                    <Stage environment="city" intensity={0.5} adjustCamera={false}>
-                        {blocks.map((block, i) => (
-                            <CityBlock key={i} {...block} />
-                        ))}
-                    </Stage>
-                </group>
-                <Float speed={2} rotationIntensity={0.1} floatIntensity={0.2} />
-            </Canvas>
+            
+
+            
         </div>
     );
 }

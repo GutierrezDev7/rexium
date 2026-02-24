@@ -103,41 +103,42 @@ export default function AetherDeepDive() {
             <SceneContent />
             <Scroll html style={{ width: '100%', height: '100%' }}>
                 {/* Section 1: Intro */}
-                <div className="w-full h-screen flex flex-col items-center justify-center pointer-events-none">
-                    <h1 className="text-[12vw] font-bold text-white tracking-tighter leading-none mix-blend-difference">
+                <div className="w-full h-screen flex flex-col items-center justify-center pointer-events-none px-6 text-center">
+                    <h1 className="text-[15vw] md:text-[12vw] font-bold text-white tracking-tighter leading-none mix-blend-difference">
                         {t.deepDives.aether.title}
                     </h1>
-                    <p className="text-sm text-gray-400 tracking-[0.5em] uppercase mt-4">
+                    <p className="text-xs md:text-sm text-gray-400 tracking-[0.3em] md:tracking-[0.5em] uppercase mt-4 md:mt-8">
                         {t.deepDives.aether.subtitle}
                     </p>
-                    <div className="absolute bottom-12 animate-bounce text-gray-500 text-xs">{t.deepDives.aether.scroll}</div>
+                    <div className="absolute bottom-12 animate-bounce text-gray-500 text-[10px] md:text-xs">{t.deepDives.aether.scroll}</div>
                 </div>
 
                 {/* Section 2: Narrative */}
-                <div className="w-full h-screen flex items-center justify-end px-24 pointer-events-none">
-                    <div className="max-w-xl text-right">
-                        <h2 className="text-4xl text-white font-light mb-6">{t.deepDives.aether.s1.title}</h2>
-                        <p className="text-gray-400 text-lg leading-relaxed">
+                <div className="w-full h-screen flex items-center justify-center md:justify-end px-6 md:px-24 pointer-events-none">
+                    <div className="max-w-md md:max-w-xl text-center md:text-right">
+                        <h2 className="text-3xl md:text-4xl text-white font-light mb-4 md:mb-6">{t.deepDives.aether.s1.title}</h2>
+                        <p className="text-gray-400 text-sm md:text-lg leading-relaxed">
                             {t.deepDives.aether.s1.desc}
                         </p>
                     </div>
                 </div>
 
                 {/* Section 3: Immersion */}
-                <div className="w-full h-screen flex items-center justify-start px-24 pointer-events-none">
-                     <div className="max-w-xl text-left">
-                        <h2 className="text-4xl text-white font-light mb-6">{t.deepDives.aether.s2.title}</h2>
-                        <p className="text-gray-400 text-lg leading-relaxed">
+                <div className="w-full h-screen flex items-center justify-center md:justify-start px-6 md:px-24 pointer-events-none">
+                     <div className="max-w-md md:max-w-xl text-center md:text-left">
+                        <h2 className="text-3xl md:text-4xl text-white font-light mb-4 md:mb-6">{t.deepDives.aether.s2.title}</h2>
+                        <p className="text-gray-400 text-sm md:text-lg leading-relaxed">
                             {t.deepDives.aether.s2.desc}
                         </p>
                     </div>
                 </div>
 
                 {/* Section 4: CTA */}
-                <div className="w-full h-screen flex flex-col items-center justify-center pointer-events-auto">
-                    <h2 className="text-6xl text-white font-bold mb-12 tracking-tight">{t.deepDives.aether.cta.title}</h2>
-                    <button className="px-12 py-4 bg-white text-black text-sm font-bold tracking-[0.2em] hover:bg-gray-200 transition-all hover:scale-105">
+                <div className="w-full h-screen flex flex-col items-center justify-center pointer-events-auto px-6 text-center">
+                    <h2 className="text-4xl md:text-6xl text-white font-bold mb-8 md:mb-12 tracking-tight leading-tight">{t.deepDives.aether.cta.title}</h2>
+                    <button className="px-8 md:px-12 py-3 md:py-4 bg-white text-black text-xs md:text-sm font-bold tracking-[0.2em] hover:bg-gray-200 transition-all hover:scale-105 relative">
                         {t.deepDives.aether.cta.button}
+                        <a href="https://wa.me/5562982772393" target="_blank" rel="noopener noreferrer" className="absolute inset-0"></a>
                     </button>
                 </div>
             </Scroll>

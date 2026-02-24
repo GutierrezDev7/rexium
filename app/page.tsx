@@ -1,14 +1,18 @@
 "use client";
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import Header from "@/components/Header";
 import Intro from "@/components/Intro";
 import Hero from "@/components/Hero";
-import Manifesto from "@/components/Manifesto";
-import Projects from "@/components/Projects";
-import About from "@/components/About";
-import Stack from "@/components/Stack";
-import Contact from "@/components/Contact";
 import CustomCursor from "@/components/CustomCursor";
+import PerformanceMonitor from "@/components/PerformanceMonitor";
+
+// Lazy load heavy sections
+const Manifesto = dynamic(() => import("@/components/Manifesto"), { ssr: false });
+const Projects = dynamic(() => import("@/components/Projects"), { ssr: false });
+const About = dynamic(() => import("@/components/About"), { ssr: false });
+const Stack = dynamic(() => import("@/components/Stack"), { ssr: false });
+const Contact = dynamic(() => import("@/components/Contact"), { ssr: false });
 
 export default function Home() {
   const [introFinished, setIntroFinished] = useState(false);
@@ -28,6 +32,7 @@ export default function Home() {
        </div>
        
        <CustomCursor />
+       <PerformanceMonitor />
        {!introFinished && <Intro onComplete={() => setIntroFinished(true)} />}
        
        <Header />

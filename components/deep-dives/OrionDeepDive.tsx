@@ -468,6 +468,7 @@ function WebGLContextHandler({ onLost, onRestored }: { onLost?: () => void; onRe
 export default function OrionDeepDive() {
   const { t } = useLanguage();
   const [rendererKey, setRendererKey] = useState(0);
+  const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
   const [config, setConfig] = useState<CityConfig>({
     count: 64,
     spread: 18,
@@ -484,10 +485,24 @@ export default function OrionDeepDive() {
   }, []);
 
   return (
-    <div className="w-full h-full bg-black relative font-mono">
-      {/* UI Controls Overlay */}
-      <div className="absolute top-0 left-0 p-8 z-10 w-80 pointer-events-none">
-        <div className="pointer-events-auto bg-black/80 backdrop-blur-md border border-white/10 p-6 rounded-sm space-y-6">
+    <div className="w-full h-full relative bg-black">
+      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,#000000,#0a0a0a_80%,#000000)] z-0 pointer-events-none"></div>
+      
+      {/* Mobile Toggle */}
+      <button 
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 md:hidden z-20 bg-cyan-900/20 backdrop-blur-md border border-cyan-500/30 text-cyan-400 px-6 py-2 rounded-full text-xs uppercase tracking-widest"
+          onClick={() => setIsMobilePanelOpen(!isMobilePanelOpen)}
+      >
+          {isMobilePanelOpen ? 'Hide System' : 'System Config'}
+      </button>
+
+      {/* UI Controls Overlay - Responsive */}
+      <div className={`absolute top-0 left-0 h-full w-full md:w-80 bg-black/90 backdrop-blur-md border-r border-white/10 p-8 flex flex-col justify-center transition-transform duration-500 ease-out z-10 ${isMobilePanelOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+        <div className="md:hidden absolute top-4 right-4">
+            <button onClick={() => setIsMobilePanelOpen(false)} className="text-white p-2">✕</button>
+        </div>
+
+        <div className="pointer-events-auto space-y-6">
           <div>
             <h2 className="text-2xl text-white font-bold tracking-tighter">{t.deepDives.orion.title}</h2>
             <p className="text-xs text-gray-500 uppercase tracking-widest mt-1">{t.deepDives.orion.subtitle}</p>
@@ -551,7 +566,7 @@ export default function OrionDeepDive() {
           </button>
         </div>
         
-        <div className="mt-4 text-[10px] text-gray-600 space-y-1">
+        <div className="mt-8 text-[10px] text-gray-600 space-y-1 font-mono">
            <p>RENDER_ENGINE: WEBGL_2.0</p>
            <p>SHADER_MODEL: PBR_STANDARD</p>
            <p>DETAIL_MODE: ARCHITECTURAL</p>

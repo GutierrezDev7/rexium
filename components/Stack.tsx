@@ -41,7 +41,7 @@ export default function Stack() {
           <div
             key={i}
             className="group relative border-r border-b border-white/10 p-8 md:p-12 transition-colors duration-500 hover:bg-white hover:text-black cursor-none"
-            data-cursor-text="TECH"
+            data-cursor-text="STACKS"
           >
             {/* Tech Number */}
             <span className="block text-xs font-mono opacity-50 mb-8 md:mb-12 group-hover:opacity-100 transition-opacity">

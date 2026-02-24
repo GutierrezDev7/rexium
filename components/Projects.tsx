@@ -1,11 +1,49 @@
 "use client";
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import { useLanguage } from "@/context/LanguageContext";
 import { KronosPreview, OrionPreview, AetherPreview } from "./ProjectPreviews";
 import Link from "next/link";
+
+
+
+// Wrapper for project cards to handle visibility
+function ProjectCard({ project, index, t }: any) {
+    const cardRef = useRef<HTMLAnchorElement>(null);
+    // Removed IntersectionObserver for now to fix potential race condition/flash
+    // The main page is already lazy loaded, so rendering these canvases shouldn't be too heavy if we manage them well.
+    // Reverting to direct render.
+
+    return (
+        <Link ref={cardRef} href={`/projects/${project.id}`} className="block project-item group cursor-pointer" data-cursor-text="EXPLORE">
+            <div className="project-component-wrapper relative w-full h-[50vh] md:h-[80vh] overflow-hidden mb-6 md:mb-12 border border-white/10 bg-[#0a0a0a]">
+              <div className="project-component w-full h-full transform transition-transform duration-700 ease-out pointer-events-none bg-[#0a0a0a]">
+                 {project.component}
+              </div>
+            </div>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-white/20 pb-4 md:pb-8 gap-4 md:gap-0">
+              <div className="w-full md:w-1/2">
+                <h3 className="project-title text-4xl md:text-5xl lg:text-8xl font-bold tracking-tighter mb-2 md:mb-4">
+                  {project.title}
+                </h3>
+                <p className="project-sub text-xs md:text-lg text-gray-400 tracking-widest uppercase">
+                  {project.subtitle}
+                </p>
+              </div>
+              <div className="w-full md:w-1/2 flex flex-col items-start md:items-end text-left md:text-right">
+                <p className="project-desc text-sm md:text-lg text-gray-200 font-light leading-relaxed max-w-full md:max-w-md mb-4 md:mb-6 opacity-0 transform translate-y-4">
+                  {project.description}
+                </p>
+                <span className="project-meta text-xs md:text-sm text-gray-500 font-mono flex items-center gap-2 group-hover:text-white transition-colors">
+                  {t.projects.view} <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </span>
+              </div>
+            </div>
+        </Link>
+    );
+}
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -72,14 +110,12 @@ export default function Projects() {
           // Reveal mask
           tl.fromTo(
             componentWrapper,
-            { clipPath: "inset(10% 10% 10% 10%)", scale: 0.95, opacity: 0, filter: "grayscale(100%)" },
+            { scale: 0.95, opacity: 0 },
             {
-              clipPath: "inset(0% 0% 0% 0%)",
               scale: 1,
               opacity: 1,
-              filter: "grayscale(0%)",
-              duration: 1.8,
-              ease: "power3.out",
+              duration: 1.2,
+              ease: "power2.out",
             }
           );
         }
@@ -141,31 +177,7 @@ export default function Projects() {
     <section ref={containerRef} className="py-20 md:py-48 px-4 md:px-12 bg-black text-white relative z-10">
       <div className="flex flex-col gap-16 md:gap-48">
         {projects.map((project, index) => (
-          <Link href={`/projects/${project.id}`} key={index} className="block project-item group cursor-pointer" data-cursor-text="VIEW">
-            <div className="project-component-wrapper relative w-full h-[60vh] md:h-[80vh] overflow-hidden mb-8 md:mb-12 border border-white/10 bg-[#050505]">
-              <div className="project-component w-full h-full transform transition-transform duration-700 ease-out pointer-events-none">
-                 {project.component}
-              </div>
-            </div>
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-white/20 pb-4 md:pb-8">
-              <div className="md:w-1/2">
-                <h3 className="project-title text-5xl md:text-8xl font-bold tracking-tighter mb-2 md:mb-4">
-                  {project.title}
-                </h3>
-                <p className="project-sub text-sm md:text-lg text-gray-400 tracking-widest uppercase">
-                  {project.subtitle}
-                </p>
-              </div>
-              <div className="md:w-1/2 flex flex-col items-end text-right">
-                <p className="project-desc text-base md:text-lg text-gray-200 font-light leading-relaxed max-w-md mb-6 opacity-0 transform translate-y-4">
-                  {project.description}
-                </p>
-                <span className="project-meta text-xs md:text-sm text-gray-500 font-mono flex items-center gap-2 group-hover:text-white transition-colors">
-                  {t.projects.view} <span className="group-hover:translate-x-1 transition-transform">→</span>
-                </span>
-              </div>
-            </div>
-          </Link>
+          <ProjectCard key={index} project={project} index={index} t={t} />
         ))}
       </div>
     </section>

@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 import { useLanguage } from "@/context/LanguageContext";
+import { useCursor } from "@/context/CursorContext";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -16,6 +17,10 @@ export default function Manifesto() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const lastPosRef = useRef<{ x: number; y: number; angle: number } | null>(null);
   const containerStyle: CSSProperties = {};
+  
+  // Track mouse globally via our existing cursor system logic to update even on scroll
+  // We'll use a local ref to track mouse position for scroll updates
+  const mousePos = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     const ctx = gsap.context(() => {
@@ -23,9 +28,9 @@ export default function Manifesto() {
       const overlay = overlayRef.current;
       if (!container || !overlay) return;
 
-      const setMx = gsap.quickTo(overlay, "--mx", { duration: 0.35, ease: "power2.out" });
-      const setMy = gsap.quickTo(overlay, "--my", { duration: 0.35, ease: "power2.out" });
-      const setR = gsap.quickTo(overlay, "--r", { duration: 0.35, ease: "power2.out" });
+      const setMx = gsap.quickTo(overlay, "--mx", { duration: 0.1, ease: "power1.out" });
+      const setMy = gsap.quickTo(overlay, "--my", { duration: 0.1, ease: "power1.out" });
+      const setR = gsap.quickTo(overlay, "--r", { duration: 0.2, ease: "power2.out" });
       const phrases = gsap.utils.toArray<HTMLElement>(".manifesto-phrase");
 
       phrases.forEach((phrase) => {
@@ -61,7 +66,6 @@ export default function Manifesto() {
       let rafId = 0;
       let nextX = 50;
       let nextY = 50;
-      let idleTimer = 0;
 
       const apply = () => {
         rafId = 0;
@@ -71,17 +75,38 @@ export default function Manifesto() {
       };
 
       const handleMove = (event: MouseEvent) => {
+        mousePos.current = { x: event.clientX, y: event.clientY };
+        updateEffect(event.clientX, event.clientY);
+      };
+      
+      const updateEffect = (clientX: number, clientY: number) => {
         const rect = container.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
+        
+        // Check if mouse is actually inside the container boundaries
+        if (
+          clientX < rect.left ||
+          clientX > rect.right ||
+          clientY < rect.top ||
+          clientY > rect.bottom
+        ) {
+          handleLeave();
+          return;
+        }
+
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
         nextX = (x / rect.width) * 100;
         nextY = (y / rect.height) * 100;
         lastPosRef.current = { x, y, angle: 0 };
         if (!rafId) rafId = window.requestAnimationFrame(apply);
-        if (idleTimer) window.clearTimeout(idleTimer);
-        idleTimer = window.setTimeout(() => {
-          setR(0);
-        }, 250);
+      };
+      
+      const handleScroll = () => {
+          // Update effect based on last known mouse position relative to new scroll position
+          // Since clientX/Y are relative to viewport, they don't change on scroll unless mouse moves.
+          // However, the element moves relative to viewport.
+          // So we just need to re-run the bounds check and relative calculation.
+          updateEffect(mousePos.current.x, mousePos.current.y);
       };
 
       const handleLeave = () => {
@@ -90,17 +115,17 @@ export default function Manifesto() {
           setMy(50);
           setR(0);
         }
-        if (idleTimer) window.clearTimeout(idleTimer);
       };
 
-      container.addEventListener("mousemove", handleMove, { passive: true });
-      container.addEventListener("mouseleave", handleLeave);
-
+      // Listen to window mousemove to track position even if entered via scroll
+      window.addEventListener("mousemove", handleMove, { passive: true });
+      window.addEventListener("scroll", handleScroll, { passive: true });
+      // Keep local listeners too for specificity if needed, but window is safer for scroll logic
+      
       return () => {
-        container.removeEventListener("mousemove", handleMove);
-        container.removeEventListener("mouseleave", handleLeave);
+        window.removeEventListener("mousemove", handleMove);
+        window.removeEventListener("scroll", handleScroll);
         if (rafId) window.cancelAnimationFrame(rafId);
-        if (idleTimer) window.clearTimeout(idleTimer);
       };
     }, containerRef);
 
@@ -127,7 +152,7 @@ export default function Manifesto() {
       
       
       
-      <div className="max-w-5xl mx-auto space-y-20 md:space-y-40 text-4xl md:text-6xl lg:text-7xl font-light tracking-tight leading-tight relative z-20">
+      <div className="max-w-5xl mx-auto select-none space-y-20 md:space-y-40 text-4xl md:text-6xl lg:text-7xl font-light tracking-tight leading-tight relative z-20">
         <p className="manifesto-phrase">{t.manifesto.line1}</p>
         <p className="manifesto-phrase">{t.manifesto.line2}</p>
         <p className="manifesto-phrase">

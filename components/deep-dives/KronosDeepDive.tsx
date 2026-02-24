@@ -63,6 +63,7 @@ function WebGLContextHandler({ onLost, onRestored }: { onLost?: () => void; onRe
 export default function KronosDeepDive() {
   const { t } = useLanguage();
   const [rendererKey, setRendererKey] = useState(0);
+  const [isMobilePanelOpen, setIsMobilePanelOpen] = useState(false);
   const [config, setConfig] = useState({
     color: "#e0e0e0",
     roughness: 0.1,
@@ -99,16 +100,28 @@ export default function KronosDeepDive() {
             <OrbitControls enableZoom={false} enablePan={false} minPolarAngle={Math.PI / 3} maxPolarAngle={Math.PI / 1.5} />
         </Canvas>
         
-        {/* Interactive UI Overlay */}
-        <div className="absolute top-0 right-0 h-full w-80 bg-[#050505]/80 backdrop-blur-xl border-l border-white/10 p-8 flex flex-col justify-center transition-all duration-500 ease-out transform translate-x-0">
+        {/* Toggle Button for Mobile */}
+        <button 
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 md:hidden z-20 bg-white/10 backdrop-blur-md border border-white/20 text-white px-6 py-2 rounded-full text-xs uppercase tracking-widest"
+            onClick={() => setIsMobilePanelOpen(!isMobilePanelOpen)}
+        >
+            {isMobilePanelOpen ? 'Close Config' : 'Configure'}
+        </button>
+
+        {/* Interactive UI Overlay - Responsive Panel */}
+        <div className={`absolute top-0 right-0 h-full w-full md:w-80 bg-[#050505]/90 backdrop-blur-xl border-l border-white/10 p-8 flex flex-col justify-center transition-transform duration-500 ease-out z-10 ${isMobilePanelOpen ? 'translate-y-0' : 'translate-y-full md:translate-y-0'}`}>
+            <div className="md:hidden absolute top-4 right-4">
+                <button onClick={() => setIsMobilePanelOpen(false)} className="text-white p-2">✕</button>
+            </div>
+            
             <h2 className="text-2xl font-bold text-white mb-1 tracking-tighter">{t.deepDives.kronos.title}</h2>
             <p className="text-xs text-gray-400 mb-8 uppercase tracking-widest">{t.deepDives.kronos.subtitle}</p>
             
-            <div className="space-y-8">
+            <div className="space-y-8 overflow-y-auto md:overflow-visible max-h-[60vh] md:max-h-none pr-2">
                 {/* Color Picker */}
                 <div>
                     <label className="text-[10px] text-gray-500 uppercase tracking-widest mb-3 block">{t.deepDives.kronos.material}</label>
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 flex-wrap">
                         {colors.map(c => (
                             <button
                                 key={c}
@@ -183,7 +196,7 @@ export default function KronosDeepDive() {
                         <p className="text-[10px] text-gray-500">{t.deepDives.kronos.price}</p>
                         <p className="text-xl text-white font-mono">$ 849.00</p>
                     </div>
-                    <button className="bg-white text-black px-6 py-2 text-xs font-bold uppercase tracking-wider hover:bg-gray-200 transition-colors">
+                    <button className="bg-white text-black px-6 py-2 text-xs font-bold uppercase tracking-wider hover:bg-gray-200 transition-colors w-full md:w-auto">
                         {t.deepDives.kronos.addToCart}
                     </button>
                 </div>

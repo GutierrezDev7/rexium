@@ -2,6 +2,7 @@
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useRef, useMemo, useState, useEffect, useCallback } from "react";
 import * as THREE from "three";
+import { usePerformance } from "@/context/PerformanceContext";
 
 const createRng = (seed: number) => {
   let t = seed + 0x6d2b79f5;
@@ -129,6 +130,8 @@ function WebGLContextHandler({ onLost }: { onLost?: () => void }) {
 
 export default function Scene({ blendMode = "screen", opacity = 0.8 }: { blendMode?: "screen" | "normal"; opacity?: number }) {
   const [rendererKey, setRendererKey] = useState(0);
+  const { dpr, particleCountMultiplier } = usePerformance();
+  
   const handleContextLost = useCallback(() => {
     setRendererKey((prev) => prev + 1);
   }, []);
@@ -138,12 +141,12 @@ export default function Scene({ blendMode = "screen", opacity = 0.8 }: { blendMo
       className="absolute inset-0 z-0 pointer-events-none transition-opacity duration-1000 ease-in-out"
       style={{ opacity, mixBlendMode: blendMode }}
     >
-      <Canvas key={rendererKey} camera={{ position: [0, 0, 5], fov: 75 }} gl={{ antialias: true, alpha: true, powerPreference: "high-performance", stencil: false, depth: true }} dpr={[1, 1.1]}>
+      <Canvas key={rendererKey} camera={{ position: [0, 0, 5], fov: 75 }} gl={{ antialias: true, alpha: true, powerPreference: "high-performance", stencil: false, depth: true }} dpr={dpr}>
         <WebGLContextHandler onLost={handleContextLost} />
         <Fog />
-        <GalaxyLayer count={1600} radius={12} depth={6} size={0.02} opacity={0.5} colorA="#8fd3ff" colorB="#3a6fd1" speed={0.05} seed={42} />
-        <GalaxyLayer count={800} radius={6} depth={3} size={0.03} opacity={0.75} colorA="#ffffff" colorB="#7fb2ff" speed={0.08} seed={1337} />
-        <GalaxyLayer count={500} radius={18} depth={10} size={0.015} opacity={0.3} colorA="#6b7cff" colorB="#1b2b6f" speed={0.02} seed={7} />
+        <GalaxyLayer count={Math.floor(1600 * particleCountMultiplier)} radius={12} depth={6} size={0.02} opacity={0.5} colorA="#8fd3ff" colorB="#3a6fd1" speed={0.05} seed={42} />
+        <GalaxyLayer count={Math.floor(800 * particleCountMultiplier)} radius={6} depth={3} size={0.03} opacity={0.75} colorA="#ffffff" colorB="#7fb2ff" speed={0.08} seed={1337} />
+        <GalaxyLayer count={Math.floor(500 * particleCountMultiplier)} radius={18} depth={10} size={0.015} opacity={0.3} colorA="#6b7cff" colorB="#1b2b6f" speed={0.02} seed={7} />
       </Canvas>
     </div>
   );

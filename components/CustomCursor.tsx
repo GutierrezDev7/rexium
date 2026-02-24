@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import { useCursor } from "@/context/CursorContext";
 
 export default function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
@@ -8,11 +9,15 @@ export default function CustomCursor() {
   const textRef = useRef<HTMLSpanElement>(null);
   const [isHovering, setIsHovering] = useState(false);
   const [cursorText, setCursorText] = useState("");
+  
+  // Track mouse position globally for scroll updates
+  const mousePos = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     const ctx = gsap.context(() => {
       // Move cursor
       const moveCursor = (e: MouseEvent) => {
+        mousePos.current = { x: e.clientX, y: e.clientY };
         gsap.to(cursorRef.current, {
           x: e.clientX,
           y: e.clientY,
@@ -27,9 +32,11 @@ export default function CustomCursor() {
         });
       };
 
-      // Hover effects
-      const handleMouseOver = (e: MouseEvent) => {
-        const target = e.target as HTMLElement;
+      // Check element under cursor logic
+      const checkElementUnderCursor = () => {
+        const target = document.elementFromPoint(mousePos.current.x, mousePos.current.y) as HTMLElement;
+        if (!target) return;
+
         const isInteractive =
           target.tagName === "A" ||
           target.tagName === "BUTTON" ||
@@ -43,12 +50,23 @@ export default function CustomCursor() {
         setCursorText(dataText || "");
       };
 
+      // Hover effects - use both mouseover and manual check on scroll
+      const handleMouseOver = (e: MouseEvent) => {
+        checkElementUnderCursor();
+      };
+
+      const handleScroll = () => {
+        checkElementUnderCursor();
+      };
+
       window.addEventListener("mousemove", moveCursor);
       window.addEventListener("mouseover", handleMouseOver);
+      window.addEventListener("scroll", handleScroll, { passive: true });
 
       return () => {
         window.removeEventListener("mousemove", moveCursor);
         window.removeEventListener("mouseover", handleMouseOver);
+        window.removeEventListener("scroll", handleScroll);
       };
     });
 

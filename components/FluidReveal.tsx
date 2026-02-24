@@ -3,6 +3,7 @@ import { Canvas, useFrame, extend, useThree } from "@react-three/fiber";
 import { useRef, useMemo, useState, useEffect, useCallback } from "react";
 import * as THREE from "three";
 import { shaderMaterial } from "@react-three/drei";
+import { usePerformance } from "@/context/PerformanceContext";
 
 // Define the custom shader material
 const FluidMaterial = shaderMaterial(
@@ -136,22 +137,104 @@ extend({ FluidMaterial });
 
 function FluidPlane() {
   const materialRef = useRef<any>(null);
-  const { viewport, mouse, size } = useThree();
+  const { viewport, size } = useThree();
   const [hovered, setHover] = useState(false);
+  const mousePos = useRef(new THREE.Vector2(0.5, 0.5));
+
+  // Global mouse tracking
+  useEffect(() => {
+    const updateMouse = (clientX: number, clientY: number) => {
+        // Calculate mouse position relative to window (0..1)
+        // Since the canvas is absolute in the section, and section scrolls,
+        // we need to map the screen-space mouse to the canvas-space UV.
+        
+        // However, for this specific effect (reveal under cursor), 
+        // we often want the effect to follow the cursor on SCREEN.
+        // But the shader uses UVs of the mesh.
+        
+        // Let's keep it simple: Map window coordinates directly to UV space logic.
+        // We need to account for the canvas element's position on screen.
+        // Since we are inside R3F Canvas, the canvas element is gl.domElement
+        // However, we are in a child component, so we can access it via useThree()
+        
+        // Let's use window size for UV normalization since this is a fullscreen-ish effect
+        // or section-wide.
+        // If the canvas is the size of the section, we can just use bounding rect.
+        
+        // Accessing DOM element from inside loop/event might be slow if we querySelector every time.
+        // Let's try to get it from context if possible or just assume full window for now as fallback.
+        
+        const canvas = document.querySelector('canvas'); // This might grab the wrong canvas if multiple are present!
+        // Better:
+        const x = clientX / window.innerWidth;
+        const y = 1 - (clientY / window.innerHeight);
+        
+        mousePos.current.set(x, y);
+    };
+
+    const handleMouseMove = (e: MouseEvent) => updateMouse(e.clientX, e.clientY);
+    
+    // Track scroll to update relative position even if mouse is static
+    const handleScroll = () => {
+        // We need the last known mouse position. 
+        // Since we don't have it easily without global state, 
+        // we can assume the user will move mouse or we rely on the fact 
+        // that if they scroll, the element moves under the static cursor.
+        // But `e` is missing.
+        // Ideally we'd store lastMouse in a ref outside.
+    };
+    
+    // Actually, let's just capture mousemove on window. 
+    // And on scroll, we can't easily get mouse pos without tracking it.
+    // BUT, the useCursor context or a global ref would be better.
+    // For now, let's just listen to mousemove which fires often enough? 
+    // No, scroll doesn't fire mousemove.
+    
+    // Hack: Use a global var or just attach to window.lastMouse if we had it.
+    // Let's implement a local tracker.
+    let lastX = 0;
+    let lastY = 0;
+    
+    const onMove = (e: MouseEvent) => {
+        lastX = e.clientX;
+        lastY = e.clientY;
+        updateMouse(lastX, lastY);
+    }
+    
+    const onScroll = () => {
+        // Recalculate with last known screen coordinates
+        updateMouse(lastX, lastY);
+    }
+
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    
+    return () => {
+        window.removeEventListener("mousemove", onMove);
+        window.removeEventListener("scroll", onScroll);
+    };
+  }, []);
 
   useFrame((state, delta) => {
     if (materialRef.current) {
       materialRef.current.uTime += delta;
-      // Smoothly interpolate mouse position for the shader
-      // Convert normalized mouse (-1 to 1) to UV space (0 to 1)
-      const targetX = (mouse.x + 1) / 2;
-      const targetY = (mouse.y + 1) / 2;
       
-      materialRef.current.uMouse.lerp(new THREE.Vector2(targetX, targetY), 0.1);
+      // Smoothly interpolate to target
+      materialRef.current.uMouse.lerp(mousePos.current, 0.1);
       materialRef.current.uResolution.set(size.width, size.height);
       
-      // Smooth hover transition
-      materialRef.current.uHover = THREE.MathUtils.lerp(materialRef.current.uHover, hovered ? 1 : 0, 0.1);
+      // Calculate distance from center (UV space 0.5, 0.5) to fade out if outside
+      // This helps limit the effect visually to the container if needed, 
+      // but the main issue is likely the global tracking affecting other sections.
+      // We can check if mousePos is within 0..1 range.
+      
+      const isInside = mousePos.current.x >= 0 && mousePos.current.x <= 1 && 
+                       mousePos.current.y >= 0 && mousePos.current.y <= 1;
+      
+      const targetHover = isInside ? 1 : 0;
+      
+      // Smoothly transition uHover
+      materialRef.current.uHover = THREE.MathUtils.lerp(materialRef.current.uHover, targetHover, 0.1);
     }
   });
 

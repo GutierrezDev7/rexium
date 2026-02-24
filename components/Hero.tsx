@@ -82,7 +82,7 @@ export default function Hero({ startAnimation = true }: { startAnimation?: boole
       </div>
       <h2
         ref={textRef}
-        className="max-w-5xl text-4xl md:text-7xl lg:text-8xl font-medium leading-[1.1] text-center px-6 text-white tracking-tight opacity-0"
+        className="max-w-5xl select-none text-4xl md:text-7xl lg:text-8xl font-medium leading-[1.1] text-center px-6 text-white tracking-tight opacity-0"
         style={{
           transform: "translateZ(-80px)",
           textShadow: "0 30px 80px rgba(0,0,0,0.6)",
