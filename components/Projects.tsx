@@ -54,6 +54,12 @@ export default function Projects() {
   // Need to merge static data (images/year) with translated data (titles)
   const projects = useMemo(() => [
     {
+      ...t.projects.items[2],
+      id: "aether",
+      year: "2023",
+      component: <AetherPreview />,
+    },
+    {
       ...t.projects.items[0],
       id: "kronos",
       year: "2024",
@@ -64,12 +70,6 @@ export default function Projects() {
       id: "orion",
       year: "2024",
       component: <OrionPreview />,
-    },
-    {
-      ...t.projects.items[2],
-      id: "aether",
-      year: "2023",
-      component: <AetherPreview />,
     },
   ], [t]);
 
